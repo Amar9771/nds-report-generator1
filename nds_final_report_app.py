@@ -6,21 +6,18 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl import Workbook
 
 # 🎯 Page Setup
-st.set_page_config(page_title="NDS Final Report Generator", layout="centered")
+st.set_page_config(page_title=" NDS Final Report Generator", layout="centered")
 
-# 🚀 Header with Logo
-col1, col2 = st.columns([1, 4])
-with col1:
-    st.image("84699f8e-935a-446e-9755-44fc003f2440.png", width=80)  # Local uploaded file
-with col2:
-    st.markdown("""
-        <h1 style='font-size: 30px; color: #f9a825; padding-top: 15px;'>NDS Final Report Generator</h1>
-        <p style='font-size: 16px;'>This tool generates a <strong>3-sheet formatted Excel report</strong> based on monthly NDS submissions.</p>
-    """, unsafe_allow_html=True)
+# 🔰 Optional Logo
+# st.image("https://your-logo-url.com/logo.png", width=120)
+
+# 🏷️ Title & Description
+st.title("📄 NDS Final Report Generator")
+st.markdown("This tool generates a **3-sheet formatted Excel report** based on monthly NDS submissions.")
 
 # 📘 Sidebar Help
 with st.sidebar:
-    st.header("📋 Instructions")
+    st.header("ℹ️ Instructions")
     st.markdown("""
     1. Upload all 4 required Excel files:
         - Master File
@@ -31,11 +28,12 @@ with st.sidebar:
     3. Download the final Excel report  
     """)
 
+    # 📥 Sample File Download (optional: make sure 'sample_format.xlsx' exists)
     try:
         with open("sample_format.xlsx", "rb") as f:
             st.download_button("📥 Download Sample Format", f, file_name="sample_format.xlsx")
     except FileNotFoundError:
-        st.info("Sample format not available.")
+        st.info("")
 
 # 📁 File Uploads
 uploaded_master = st.file_uploader("🔹 Upload All Entity Master File", type="xlsx")
@@ -49,8 +47,10 @@ def get_ids(df):
 def apply_formatting(ws):
     header_fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
     border = Border(
-        left=Side(style="thin"), right=Side(style="thin"),
-        top=Side(style="thin"), bottom=Side(style="thin")
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin")
     )
     for col in ws.iter_cols(min_row=1, max_row=1):
         for cell in col:
@@ -63,33 +63,36 @@ def apply_formatting(ws):
         max_length = 0
         col_letter = col[0].column_letter
         for cell in col:
-            if cell.value:
-                max_length = max(max_length, len(str(cell.value)))
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
         ws.column_dimensions[col_letter].width = max_length + 1
 
 if all([uploaded_master, uploaded_march, uploaded_april, uploaded_may]):
     if st.button("📊 Generate Report"):
 
-        # Load files
+        # Read files
         df_master = pd.read_excel(uploaded_master)
         df_march = pd.read_excel(uploaded_march)
         df_april = pd.read_excel(uploaded_april)
         df_may = pd.read_excel(uploaded_may)
 
-        # ID Collection
+        # Get IDs
         march_ids = get_ids(df_march)
         april_ids = get_ids(df_april)
         may_ids = get_ids(df_may)
 
-        # Sheet 1
+        # Sheet 1: Entity List
         entity_df = df_master[["Organization", "Name"]].copy()
 
-        # Sheet 2
+        # Sheet 2: Last 3 Months Not Submitted
         last3_df = df_master[
             df_master["Organization"].apply(lambda x: x not in march_ids and x not in april_ids and x not in may_ids)
         ][["Organization", "Name"]].copy()
 
-        # Sheet 3
+        # Sheet 3: Summary
         def missing_count(org_id):
             return sum([org_id not in march_ids, org_id not in april_ids, org_id not in may_ids])
 
@@ -97,7 +100,7 @@ if all([uploaded_master, uploaded_march, uploaded_april, uploaded_may]):
         summary_df["Months"] = summary_df["Organization"].apply(missing_count)
         summary_df = summary_df[summary_df["Months"] > 0]
 
-        # Excel Creation
+        # 📒 Excel Workbook
         wb = Workbook()
         ws1 = wb.active
         ws1.title = "Entity_SelfList"
@@ -115,12 +118,12 @@ if all([uploaded_master, uploaded_march, uploaded_april, uploaded_may]):
             ws3.append(r)
         apply_formatting(ws3)
 
-        # Download
+        # 💾 Save and Download
         output = io.BytesIO()
         wb.save(output)
         output.seek(0)
 
-        st.success("✅ Report generated successfully!")
+        st.success("✅ Report generated successfully with formatting!")
         st.download_button(
             label="📥 Download Formatted Excel Report",
             data=output,
@@ -128,7 +131,8 @@ if all([uploaded_master, uploaded_march, uploaded_april, uploaded_may]):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-        st.subheader("🔎 Preview: Last 3 Months Not Submitted")
+        st.subheader("📋 Preview: 'Last 3 Months Not Submitted'")
         st.dataframe(last3_df.head(), use_container_width=True)
+
 else:
-    st.info("📂 Please upload all 4 required Excel files to continue.")
+    st.info("📂 Please upload all 4 required Excel files to continue.") 
