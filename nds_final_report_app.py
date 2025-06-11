@@ -12,7 +12,7 @@ st.set_page_config(page_title=" NDS Not Submitted report(latest 3 Months)", layo
 # st.image("https://your-logo-url.com/logo.png", width=120)
 
 # 🏷️ Title & Description
-st.title("📄 NDS Not Submitted report")
+st.title(" NDS Not Submitted report")
 st.markdown("This tool generates a **3-sheet formatted Excel report** based on monthly NDS submissions.")
 
 # 📘 Sidebar Help
