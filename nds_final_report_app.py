@@ -33,7 +33,7 @@ with st.sidebar:
         with open("sample_format.xlsx", "rb") as f:
             st.download_button("📥 Download Sample Format", f, file_name="sample_format.xlsx")
     except FileNotFoundError:
-        st.info("Sample format file not found.")
+        st.info("")
 
 # 📁 File Uploads
 uploaded_master = st.file_uploader("🔹 Upload All Entity Master File", type="xlsx")
