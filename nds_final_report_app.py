@@ -68,7 +68,7 @@ def apply_formatting(ws):
                     max_length = max(max_length, len(str(cell.value)))
             except:
                 pass
-        ws.column_dimensions[col_letter].width = max_length + 2
+        ws.column_dimensions[col_letter].width = max_length + 1
 
 if all([uploaded_master, uploaded_march, uploaded_april, uploaded_may]):
     if st.button("📊 Generate Report"):
